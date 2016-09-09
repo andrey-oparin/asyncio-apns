@@ -30,12 +30,13 @@ def _get_apns_id(headers: dict):
 
 class APNsConnection:
     def __init__(self, cert_file: str, key_file: str, *, loop=None,
-                 server_addr=PRODUCTION_SERVER_ADDR, server_port=443):
+                 server_addr=PRODUCTION_SERVER_ADDR, server_port=443, verify_ssl=True):
         self.protocol = None
         self.cert_file = cert_file
         self.key_file = key_file
         self.server_addr = server_addr
         self.server_port = server_port
+        self.verify_ssl = verify_ssl
         self._loop = loop
         self._connection_task = None
 
@@ -45,10 +46,9 @@ class APNsConnection:
 
     @asyncio.coroutine
     def _do_connect(self):
-        verify_ssl = self.server_addr in (PRODUCTION_SERVER_ADDR, DEVELOPMENT_SERVER_ADDR)
         self.protocol = yield from H2ClientProtocol.connect(
                 self.server_addr, self.server_port, cert_file=self.cert_file,
-                key_file=self.key_file, verify_ssl=verify_ssl, loop=self._loop)
+                key_file=self.key_file, verify_ssl=self.verify_ssl, loop=self._loop)
 
     @asyncio.coroutine
     def connect(self):
